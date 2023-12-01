@@ -1,0 +1,197 @@
+# Advent of Code - 2023 Day 01
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1"}
+])
+```
+
+## Introduction
+
+--> Content
+
+## Puzzle
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input","day":"1","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2023", "1", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+## Parser
+
+### Code - Parser
+
+```elixir
+defmodule Parser do
+  def parse(input) do
+    input |> String.split("\n", trim: true)
+  end
+
+  def read_calibration_value(line) do
+    digits = line |> String.to_charlist() |> Enum.filter(&(&1 in ?0..?9))
+    first_digit = digits |> Enum.at(0)
+    last_digit = digits |> Enum.at(-1)
+    [first_digit, last_digit] |> List.to_integer()
+  end
+end
+```
+
+### Tests - Parser
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule ParserTest do
+  use ExUnit.Case, async: true
+  import Parser
+
+  @input "1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet"
+  @parsed [
+    "1abc2",
+    "pqr3stu8vwx",
+    "a1b2c3d4e5f",
+    "treb7uchet"
+  ]
+  @values [12, 38, 15, 77]
+
+  test "parse/1" do
+    actual = parse(@input)
+    assert actual == @parsed
+  end
+
+  for {line, value} <- Enum.zip(@parsed, @values) do
+    test "#{value} read from #{line}" do
+      assert unquote(value) === read_calibration_value(unquote(line))
+    end
+  end
+end
+
+ExUnit.run()
+```
+
+<!-- livebook:{"branch_parent_index":2} -->
+
+## Part One
+
+### Code - Part 1
+
+```elixir
+defmodule PartOne do
+  def solve(input) do
+    IO.puts("--- Part One ---")
+    IO.puts("Result: #{run(input)}")
+  end
+
+  def run(input) do
+    input
+    |> Parser.parse()
+    |> Enum.map(&Parser.read_calibration_value/1)
+    |> Enum.sum()
+  end
+end
+```
+
+### Tests - Part 1
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule PartOneTest do
+  use ExUnit.Case, async: true
+  import PartOne
+
+  @input "1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet"
+  @expected 142
+
+  test "part one" do
+    actual = run(@input)
+    assert actual == @expected
+  end
+end
+
+ExUnit.run()
+```
+
+### Solution - Part 1
+
+```elixir
+PartOne.solve(puzzle_input)
+```
+
+<!-- livebook:{"branch_parent_index":2} -->
+
+## Part Two
+
+### Code - Part 2
+
+```elixir
+defmodule PartTwo do
+  defp decode_digits("one" <> rest), do: "1" <> decode_digits("e" <> rest)
+  defp decode_digits("two" <> rest), do: "2" <> decode_digits("o" <> rest)
+  defp decode_digits("three" <> rest), do: "3" <> decode_digits("e" <> rest)
+  defp decode_digits("four" <> rest), do: "4" <> decode_digits(rest)
+  defp decode_digits("five" <> rest), do: "5" <> decode_digits("e" <> rest)
+  defp decode_digits("six" <> rest), do: "6" <> decode_digits(rest)
+  defp decode_digits("seven" <> rest), do: "7" <> decode_digits("n" <> rest)
+  defp decode_digits("eight" <> rest), do: "8" <> decode_digits("t" <> rest)
+  defp decode_digits("nine" <> rest), do: "9" <> decode_digits("e" <> rest)
+  defp decode_digits(<<char, rest::binary>>), do: <<char>> <> decode_digits(rest)
+  defp decode_digits(""), do: ""
+
+  def solve(input) do
+    IO.puts("--- Part Two ---")
+    IO.puts("Result: #{run(input)}")
+  end
+
+  def run(input) do
+    input
+    |> decode_digits()
+    |> Parser.parse()
+    |> Enum.map(&Parser.read_calibration_value/1)
+    |> Enum.sum()
+  end
+end
+```
+
+### Tests - Part 2
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule PartTwoTest do
+  use ExUnit.Case, async: true
+  import PartTwo
+
+  @input "two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen"
+  @expected 281
+
+  test "part two" do
+    actual = run(@input)
+    assert actual == @expected
+  end
+end
+
+ExUnit.run()
+```
+
+### Solution - Part 2
+
+```elixir
+PartTwo.solve(puzzle_input)
+```
+
+<!-- livebook:{"offset":3696,"stamp":{"token":"XCP.6DndTA4H0suXLadto4OBd_H5ZRue9zMBFht_X8zi-aljoJzi8kg7coE9hR7INcOhB8a8fCKnTWom9UUQCoDGhV0BPWI41HOrFUa89IXfmgU1YEANI3M","version":2}} -->
