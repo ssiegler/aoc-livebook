@@ -1,0 +1,233 @@
+# Advent of Code - 2023 Day 02
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1"}
+])
+```
+
+## Puzzle
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input","day":"2","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2023", "2", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+```elixir
+example_input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
+```
+
+## Game
+
+```elixir
+defmodule Game do
+  defstruct [:id, rounds: %{red: 0, blue: 0, green: 0}]
+
+  def parse_games(input) do
+    input |> String.split("\n", trim: true) |> Enum.map(&parse_game/1)
+  end
+
+  defp parse_game(line) do
+    [id, rounds] = Regex.run(~r/Game ([0-9]+): (.*)/, line, capture: :all_but_first)
+
+    %Game{
+      id: id |> String.to_integer(),
+      rounds: rounds |> String.split("; ") |> Enum.map(&parse_round/1)
+    }
+  end
+
+  defp parse_round(round) do
+    for cube <- round |> String.split(", "), into: %{} do
+      [count, color] = cube |> String.split(" ")
+      {color |> String.to_existing_atom(), count |> String.to_integer()}
+    end
+  end
+end
+```
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule GameTest do
+  use ExUnit.Case, async: true
+  import Game
+
+  @input example_input
+  @parsed [
+    %Game{id: 1, rounds: [%{blue: 3, red: 4}, %{red: 1, green: 2, blue: 6}, %{green: 2}]},
+    %Game{
+      id: 2,
+      rounds: [%{blue: 1, green: 2}, %{green: 3, blue: 4, red: 1}, %{green: 1, blue: 1}]
+    },
+    %Game{
+      id: 3,
+      rounds: [%{blue: 6, green: 8, red: 20}, %{red: 4, green: 13, blue: 5}, %{green: 5, red: 1}]
+    },
+    %Game{
+      id: 4,
+      rounds: [%{blue: 6, red: 3, green: 1}, %{red: 6, green: 3}, %{green: 3, blue: 15, red: 14}]
+    },
+    %Game{id: 5, rounds: [%{blue: 1, red: 6, green: 3}, %{red: 1, green: 2, blue: 2}]}
+  ]
+
+  test "parse/1" do
+    actual = parse_games(@input)
+    assert actual == @parsed
+  end
+end
+
+ExUnit.run()
+```
+
+<!-- livebook:{"branch_parent_index":1} -->
+
+## Part 1
+
+```elixir
+defmodule PartOne do
+  def is_possible_game(%Game{id: _id, rounds: rounds}) do
+    Enum.all?(rounds, &is_possible_round/1)
+  end
+
+  def is_possible_round(round) do
+    Map.get(round, :red, 0) <= 12 &&
+      Map.get(round, :green, 0) <= 13 &&
+      Map.get(round, :blue, 0) <= 14
+  end
+
+  def solve(input) do
+    IO.puts("--- Part One ---")
+    IO.puts("Result: #{run(input)}")
+  end
+
+  def run(input) do
+    input
+    |> Game.parse_games()
+    |> Enum.filter(&is_possible_game/1)
+    |> Enum.map(& &1.id)
+    |> Enum.sum()
+  end
+end
+```
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule PartOneTest do
+  use ExUnit.Case, async: true
+  import PartOne
+
+  test "is_possible/1 returns possible games" do
+    actual =
+      unquote(example_input)
+      |> Game.parse_games()
+      |> Enum.filter(&is_possible_game/1)
+      |> Enum.map(& &1.id)
+
+    assert actual == [1, 2, 5]
+  end
+
+  test "is_possible_round/1 returns true" do
+    assert is_possible_round(%{blue: 3, red: 4}) == true
+  end
+
+  test "is_possible_round/1 returns false" do
+    assert is_possible_round(%{blue: 6, green: 8, red: 20}) == false
+  end
+
+  test "part one" do
+    actual = run(unquote(example_input))
+    assert actual == 8
+  end
+end
+
+ExUnit.run()
+```
+
+```elixir
+PartOne.solve(puzzle_input)
+```
+
+<!-- livebook:{"branch_parent_index":1} -->
+
+## Part 2
+
+```elixir
+defmodule PartTwo do
+  def fewest_cubes(%Game{id: _id, rounds: rounds}) do
+    for round <- rounds, reduce: %{} do
+      fewest ->
+        Map.merge(fewest, round, fn _key, min, count -> max(min, count) end)
+    end
+  end
+
+  def power(%{red: red, green: green, blue: blue}) do
+    red * green * blue
+  end
+
+  def solve(input) do
+    IO.puts("--- Part Two ---")
+    IO.puts("Result: #{run(input)}")
+  end
+
+  def run(input) do
+    input
+    |> Game.parse_games()
+    |> Enum.map(&fewest_cubes/1)
+    |> Enum.map(&power/1)
+    |> Enum.sum()
+  end
+end
+```
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule PartTwoTest do
+  use ExUnit.Case, async: true
+  import PartTwo
+
+  @fewest [
+    %{red: 4, green: 2, blue: 6},
+    %{green: 3, red: 1, blue: 4},
+    %{green: 13, red: 20, blue: 6},
+    %{green: 3, red: 14, blue: 15},
+    %{green: 3, red: 6, blue: 2}
+  ]
+
+  test "fewest_cubes/1" do
+    actual =
+      unquote(example_input)
+      |> Game.parse_games()
+      |> Enum.map(&PartTwo.fewest_cubes/1)
+
+    assert actual == @fewest
+  end
+
+  for {cubes, power} <- @fewest |> Enum.zip([48, 12, 1560, 630, 36]) do
+    test "power/1 returns #{power}" do
+      actual = PartTwo.power(unquote(Macro.escape(cubes)))
+      assert actual == unquote(power)
+    end
+  end
+
+  test "part two" do
+    actual = run(unquote(example_input))
+    assert actual == 2286
+  end
+end
+
+ExUnit.run()
+```
+
+```elixir
+PartTwo.solve(puzzle_input)
+```
+
+<!-- livebook:{"offset":5066,"stamp":{"token":"XCP.rbnEoZ5dhTjvmE6ucnkEPPFGhg3CYYl7KveJfz7jvqG4lrrnm9jGynO-Ggt-jOUxMOVSzyjWMet9D4mGyAt5BAbQcOyZWsYUbgPM8M2_YMgoqXt3QsY","version":2}} -->
