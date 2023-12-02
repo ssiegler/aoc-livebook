@@ -6,10 +6,6 @@ Mix.install([
 ])
 ```
 
-## Introduction
-
---> Content
-
 ## Puzzle
 
 <!-- livebook:{"attrs":{"assign_to":"puzzle_input","day":"1","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
@@ -74,7 +70,7 @@ end
 ExUnit.run()
 ```
 
-<!-- livebook:{"branch_parent_index":2} -->
+<!-- livebook:{"branch_parent_index":1} -->
 
 ## Part One
 
@@ -126,7 +122,7 @@ ExUnit.run()
 PartOne.solve(puzzle_input)
 ```
 
-<!-- livebook:{"branch_parent_index":2} -->
+<!-- livebook:{"branch_parent_index":1} -->
 
 ## Part Two
 
@@ -194,4 +190,4 @@ ExUnit.run()
 PartTwo.solve(puzzle_input)
 ```
 
-<!-- livebook:{"offset":3696,"stamp":{"token":"XCP.6DndTA4H0suXLadto4OBd_H5ZRue9zMBFht_X8zi-aljoJzi8kg7coE9hR7INcOhB8a8fCKnTWom9UUQCoDGhV0BPWI41HOrFUa89IXfmgU1YEANI3M","version":2}} -->
+<!-- livebook:{"offset":3666,"stamp":{"token":"XCP.HQS2pCLnriHqy9qBAR67NjalHZprR8QPl4_JGhp0TXytVWbfy_kVDecEFka9XdSFkIQbyTjxDZPBvJA6k5r7dfe_6rX39Zjgts7OElvXyk49f1_Bw_E","version":2}} -->
